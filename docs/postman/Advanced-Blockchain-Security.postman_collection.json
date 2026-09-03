@@ -1,0 +1,136 @@
+{
+  "info": {
+    "name": "Advanced Blockchain Security API",
+    "_postman_id": "b3b0f3e4-absf-demo-001",
+    "description": "Requests for the FastAPI backend with a pre-request script that generates a JWT for zero-trust auth.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Issue Token (Pre-request) \u2192 Uses {{authToken}}",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "/* Generate HS256 JWT matching backend SECRET */",
+              "function b64url(obj){",
+              "  const s = JSON.stringify(obj);",
+              "  return Buffer.from(s).toString('base64').replace(/=/g,'').replace(/\\+/g,'-').replace(/\\//g,'_');",
+              "}",
+              "function hmacSHA256(data, secret){",
+              "  const crypto = require('crypto');",
+              "  return crypto.createHmac('sha256', secret).update(data).digest('base64').replace(/=/g,'').replace(/\\+/g,'-').replace(/\\//g,'_');",
+              "}",
+              "const SECRET = pm.environment.get('jwtSecret') || 'super-secret-zero-trust-key';",
+              "const header = { alg:'HS256', typ:'JWT' };",
+              "const now = Math.floor(Date.now()/1000);",
+              "const payload = { sub:'postman', iss:'absf-node', iat:now, exp: now + 3600 };",
+              "const h = b64url(header);",
+              "const p = b64url(payload);",
+              "const sig = hmacSHA256(h + '.' + p, SECRET);",
+              "const token = h + '.' + p + '.' + sig;",
+              "pm.environment.set('authToken', token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Transaction /tx",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"from_addr\": \"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n  \"to_addr\": \"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n  \"amount\": 12.5,\n  \"gas_price\": 50.0,\n  \"contract_call\": 0,\n  \"freq_per_hr\": 2,\n  \"hour\": 15,\n  \"nonce\": 1,\n  \"timestamp\": 1761049488.1488826\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tx",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "tx"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Mine Block /mine",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/mine",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mine"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Chain /chain",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/chain",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "chain"
+          ]
+        }
+      }
+    }
+  ]
+}

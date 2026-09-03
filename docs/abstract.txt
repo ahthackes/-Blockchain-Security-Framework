@@ -1,0 +1,5 @@
+This project proposes an AI-driven security layer for blockchain networks that combines
+anomaly detection over transaction features with a zero-trust node admission policy.
+We implement an IsolationForest model to score suspicious behavior, a simple blockchain
+simulator with a security hook, a FastAPI backend, and a Streamlit monitoring dashboard.
+Smart contract best practices are demonstrated via a vulnerable and a secured example.
